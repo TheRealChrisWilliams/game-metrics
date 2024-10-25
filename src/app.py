@@ -2,23 +2,20 @@ from flask import Flask, request, jsonify
 import torch
 import data_processing as dp
 from game_adjustment_model import train_model, adjust_game_parameters
-from content_generation import load_llama_model, generate_content, generate_voice_content
-from src.voice_module import transcribe_audio, capture_voice_input
+from content_generation import generate_content, generate_voice_content
+from src.voice_module import transcribe_audio_whisper, record_audio
 
 app = Flask(__name__)
 
-# Load and preprocess data
 normalized_metrics_df = dp.normalize_metrics(dp.player_metrics_df)
-high_interest_areas = dp.generate_heatmap()
+max_quadrant = dp.generate_heatmap()
+player_metrics_classification = dp.classify_player_metrics(normalized_metrics_df)
 X_tensor = torch.FloatTensor(normalized_metrics_df.values)
 Y_tensor = torch.FloatTensor([[0.1, -0.05], [0.2, -0.1], [-0.1, 0.05], [0.0, 0.0], [0.15, -0.05]])
 
 # Train the model
 model = train_model(X_tensor, Y_tensor, X_tensor.shape[1], Y_tensor.shape[1])
 scaler = dp.scaler  # Use the same scaler from data_processing
-
-# Load LLaMA model for content generation
-llama_model, llama_tokenizer, device = load_llama_model()
 
 
 # Route to adjust game parameters
@@ -35,28 +32,29 @@ def adjust_parameters():
 def content():
     data = request.json
     area_description = data.get("area_description", "a mysterious forest")
-    mission = generate_content(llama_model, llama_tokenizer, device, area_description)
+    mission = generate_content(area_description, player_metrics_classification)
     return jsonify({"generated_mission": mission})
 
-# Route to capture voice input and generate NPC interaction
+
+# Route to handle voice interaction
 @app.route('/voice_interaction', methods=['GET'])
 def voice_interaction():
     # Capture voice input
-    audio = capture_voice_input()
-    # Transcribe audio to text
-    transcribed_text = transcribe_audio(audio)
+    audio = record_audio(duration=5, fs=16000)
+    # Transcribe audio to text using Whisper
+    transcribed_text = transcribe_audio_whisper(audio)
     if transcribed_text:
-        # Use the transcribed text to generate NPC response
-        npc_response = generate_npc_response(transcribed_text)
+        # Generate NPC response
+        npc_response = generate_voice_content(transcribed_text)
         return jsonify({"npc_response": npc_response})
     else:
-        return jsonify({"error": "Could not understand audio"}), 400
+        return jsonify({"error": "Could not transcribe audio"}), 400
 
 
 def generate_npc_response(player_input):
     # Use the content generation module to create NPC dialogue
     prompt = f"Player says: '{player_input}'\nNPC responds:"
-    npc_response = generate_voice_content(llama_model, llama_tokenizer, device, prompt)
+    npc_response = generate_voice_content(prompt)
     return npc_response
 
 

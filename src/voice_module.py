@@ -1,30 +1,32 @@
-import speech_recognition as sr
-import torch
+import whisper
+import sounddevice as sd
+import numpy as np
 
-# Initialize the recognizer
-recognizer = sr.Recognizer()
-
-
-def capture_voice_input():
-    # Use the microphone as the source
-    with sr.Microphone() as source:
-        print("Please speak into the microphone...")
-        # Adjust for ambient noise
-        recognizer.adjust_for_ambient_noise(source)
-        # Capture the audio
-        audio = recognizer.listen(source)
-    return audio
+# Load the Whisper model
+model_name = "base"  # You can choose 'tiny', 'small', 'medium', 'large'
+model = whisper.load_model(model_name)
 
 
-def transcribe_audio(audio):
-    try:
-        # Use Google's free Web Speech API for transcription
-        text = recognizer.recognize_google(audio)
-        print(f"Transcribed Text: {text}")
-        return text
-    except sr.UnknownValueError:
-        print("Sorry, could not understand the audio.")
-        return None
-    except sr.RequestError as e:
-        print(f"Could not request results; {e}")
-        return None
+def record_audio(duration=5, fs=16000):
+    print("Recording...")
+    audio = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='float32')
+    sd.wait()
+    print("Recording complete.")
+    return np.squeeze(audio)
+
+
+def transcribe_audio_whisper(audio, fs=16000):
+    # Save the audio to a temporary file
+    import tempfile
+    import os
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio_file:
+        temp_audio_file_name = temp_audio_file.name
+        # Convert the NumPy array to a WAV file
+        from scipy.io.wavfile import write
+        write(temp_audio_file_name, fs, audio)
+    # Transcribe the audio file using Whisper
+    result = model.transcribe(temp_audio_file_name)
+    os.remove(temp_audio_file_name)
+    transcribed_text = result["text"]
+    print(f"Transcribed Text: {transcribed_text}")
+    return transcribed_text

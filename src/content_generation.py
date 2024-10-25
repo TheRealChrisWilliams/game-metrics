@@ -1,42 +1,74 @@
-import torch
-from transformers import LlamaTokenizer, LlamaForCausalLM
+import openai
+from dotenv import load_dotenv
 
+load_dotenv()
+client = openai.OpenAI()
 
-# Load the LLaMA model
-def load_llama_model(model_name='"meta-llama/Llama-3.2-1B'):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    tokenizer = LlamaTokenizer.from_pretrained(model_name)
-    model = LlamaForCausalLM.from_pretrained(model_name, device_map='auto', torch_dtype=torch.float16)
-    model.to(device)
-    return model, tokenizer, device
+quadrant_names = {
+    'Q1': 'Mystic Mountains',
+    'Q2': 'Enchanted Forest',
+    'Q3': 'Crystal Caverns',
+    'Q4': 'Sunken Ruins'
+}
 
 
 # Generate content for high-interest areas
-def generate_content(model, tokenizer, device, area_description):
-    prompt = f"Create a new mission where the player explores {area_description}."
-    inputs = tokenizer(prompt, return_tensors='pt').to(device)
-    outputs = model.generate(
-        input_ids=inputs['input_ids'],
-        max_length=200,
-        num_return_sequences=1,
-        no_repeat_ngram_size=2,
-        early_stopping=True
-    )
-    generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    mission_description = generated_text[len(prompt):].strip()
+def generate_content(quadrant, player_metrics):
+    quadrant_name = quadrant_names.get(quadrant, "the unknown lands")
+    performance = player_metrics.get('performance', 'average')
+    engagement = player_metrics.get('engagement', 'neutral')
+
+    # Adjust the prompt based on player metrics
+    if performance == 'high':
+        challenge = "Create a challenging mission"
+    elif performance == 'low':
+        challenge = "Create an easier mission"
+    else:
+        challenge = "Create an engaging mission"
+
+    if engagement == 'high':
+        theme = "that expands the lore of"
+    elif engagement == 'low':
+        theme = "that revitalizes interest in"
+    else:
+        theme = "set in"
+
+    prompt = f"{challenge} {theme} {quadrant_name}. The mission should match the game's style and captivate the player."
+
+    try:
+        response = openai.chat.completions.create(
+            model='gpt-4o',
+            messages=[
+                {'role': 'system', 'content': 'You are a game content generator assistant.'},
+                {'role': 'user', 'content': prompt}
+            ],
+            max_tokens=4096,
+            temperature=0.7,
+        )
+        print(response)
+        mission_description = response.choices[0].message.content
+    except Exception as e:
+        print(f"Error generating content: {e}")
+        mission_description = "An error occurred while generating content."
+
     return mission_description
 
 
-def generate_voice_content(model, tokenizer, device, prompt):
-    inputs = tokenizer(prompt, return_tensors='pt').to(device)
-    outputs = model.generate(
-        input_ids=inputs['input_ids'],
-        max_length=200,
-        num_return_sequences=1,
-        no_repeat_ngram_size=2,
-        early_stopping=True
-    )
-    generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    # Extract the generated text after the prompt
-    response = generated_text[len(prompt):].strip()
-    return response
+# Generate NPC responses based on voice input
+def generate_voice_content(prompt):
+    try:
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                {'role': 'system', 'content': 'You are an NPC in a game responding to the player.'},
+                {'role': 'user', 'content': prompt}
+            ],
+            max_tokens=150,
+            temperature=0.7,
+        )
+        npc_response = response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        print(f"Error generating NPC response: {e}")
+        npc_response = "An error occurred while generating NPC response."
+
+    return npc_response
