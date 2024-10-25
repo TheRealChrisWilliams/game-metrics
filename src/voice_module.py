@@ -3,7 +3,7 @@ import sounddevice as sd
 import numpy as np
 
 # Load the Whisper model
-model_name = "base"  # You can choose 'tiny', 'small', 'medium', 'large'
+model_name = "base"
 model = whisper.load_model(model_name)
 
 

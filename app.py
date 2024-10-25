@@ -1,11 +1,16 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, url_for
 import torch
-import data_processing as dp
-from game_adjustment_model import train_model, adjust_game_parameters
-from content_generation import generate_content, generate_voice_content
+import src.data_processing as dp
+from src.game_adjustment_model import train_model, adjust_game_parameters
+from src.content_generation import generate_content, generate_voice_content
 from src.voice_module import transcribe_audio_whisper, record_audio
 
 app = Flask(__name__)
+
+# Global variables to store data
+mission = ""
+npc_response = ""
+heatmap_filename = "static/heatmap.png"
 
 normalized_metrics_df = dp.normalize_metrics(dp.player_metrics_df)
 max_quadrant = dp.generate_heatmap()
@@ -16,6 +21,11 @@ Y_tensor = torch.FloatTensor([[0.1, -0.05], [0.2, -0.1], [-0.1, 0.05], [0.0, 0.0
 # Train the model
 model = train_model(X_tensor, Y_tensor, X_tensor.shape[1], Y_tensor.shape[1])
 scaler = dp.scaler  # Use the same scaler from data_processing
+
+
+@app.route('/')
+def index():
+    return render_template("index.html", mission=mission, npc_response=npc_response, heatmap_url=url_for('static', filename='heatmap.png'), player_metrics_classification=player_metrics_classification)
 
 
 # Route to adjust game parameters

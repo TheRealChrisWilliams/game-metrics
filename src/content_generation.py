@@ -45,7 +45,6 @@ def generate_content(quadrant, player_metrics):
             max_tokens=4096,
             temperature=0.7,
         )
-        print(response)
         mission_description = response.choices[0].message.content
     except Exception as e:
         print(f"Error generating content: {e}")

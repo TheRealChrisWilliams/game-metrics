@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personalized Gaming Experience</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Personalized Gaming Experience</h1>
+        <hr>
+
+        <!-- Heatmap Section -->
+        <h2>Player Activity Heatmap</h2>
+        <img src="{{ heatmap_url }}" alt="Heatmap" class="img-fluid">
+
+        <!-- Mission Section -->
+        <h2 class="mt-5">Generated Mission</h2>
+        {% if mission %}
+            <p>{{ mission }}</p>
+        {% else %}
+            <p>No mission generated yet.</p>
+        {% endif %}
+        <form action="{{ url_for('generate_content_route') }}" method="post">
+            <button type="submit" class="btn btn-primary">Generate New Mission</button>
+        </form>
+
+        <!-- NPC Interaction Section -->
+        <h2 class="mt-5">NPC Interaction</h2>
+        {% if npc_response %}
+            <p><strong>NPC:</strong> {{ npc_response }}</p>
+        {% else %}
+            <p>No interaction yet.</p>
+        {% endif %}
+        <form action="{{ url_for('voice_interaction_route') }}" method="post">
+            <button type="submit" class="btn btn-secondary">Talk to NPC</button>
+        </form>
+
+        <!-- Player Metrics Section -->
+        <h2 class="mt-5">Player Metrics</h2>
+        <ul>
+            <li>Performance: {{ player_metrics_classification.performance }}</li>
+            <li>Engagement: {{ player_metrics_classification.engagement }}</li>
+        </ul>
+
+    </div>
+
+    <!-- Bootstrap JS (Optional for interactive components) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+</body>
+</html>

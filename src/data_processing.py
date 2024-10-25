@@ -73,6 +73,7 @@ def normalize_metrics(df):
 # World Heatmap Generation
 def generate_heatmap():
     world_size = (10, 10)
+    output_filename = "heatmap.png"
     player_positions = [
         # Positions in Q1 (Top-left)
         (2, 6), (2, 6), (3, 7), (2, 8), (3, 6),
@@ -89,12 +90,13 @@ def generate_heatmap():
         quadrant = get_quadrant(position, world_size)
         quadrant_activity[quadrant] += 1
 
-    # Normalize and visualize the heatmap
     heatmap_normalized = heatmap_data / heatmap_data.max()
     plt.imshow(heatmap_normalized, cmap='hot', interpolation='nearest')
     plt.title('Player Activity Heatmap')
     plt.colorbar()
-    plt.show()
+    # Save the heatmap to a file
+    plt.savefig(output_filename)
+    plt.close()
 
     # Identify the quadrant with the highest activity
     max_quadrant = max(quadrant_activity, key=quadrant_activity.get)
