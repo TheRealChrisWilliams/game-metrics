@@ -2,7 +2,8 @@ from flask import Flask, request, jsonify
 import torch
 import data_processing as dp
 from game_adjustment_model import train_model, adjust_game_parameters
-from content_generation import load_llama_model, generate_content
+from content_generation import load_llama_model, generate_content, generate_voice_content
+from src.voice_module import transcribe_audio, capture_voice_input
 
 app = Flask(__name__)
 
@@ -36,6 +37,27 @@ def content():
     area_description = data.get("area_description", "a mysterious forest")
     mission = generate_content(llama_model, llama_tokenizer, device, area_description)
     return jsonify({"generated_mission": mission})
+
+# Route to capture voice input and generate NPC interaction
+@app.route('/voice_interaction', methods=['GET'])
+def voice_interaction():
+    # Capture voice input
+    audio = capture_voice_input()
+    # Transcribe audio to text
+    transcribed_text = transcribe_audio(audio)
+    if transcribed_text:
+        # Use the transcribed text to generate NPC response
+        npc_response = generate_npc_response(transcribed_text)
+        return jsonify({"npc_response": npc_response})
+    else:
+        return jsonify({"error": "Could not understand audio"}), 400
+
+
+def generate_npc_response(player_input):
+    # Use the content generation module to create NPC dialogue
+    prompt = f"Player says: '{player_input}'\nNPC responds:"
+    npc_response = generate_voice_content(llama_model, llama_tokenizer, device, prompt)
+    return npc_response
 
 
 # Start the Flask app

@@ -5,3 +5,4 @@ torch
 transformers
 flask
 scikit-learn
+speech_recognition
