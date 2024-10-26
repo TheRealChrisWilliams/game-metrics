@@ -4,6 +4,9 @@ import src.data_processing as dp
 from src.game_adjustment_model import train_model, adjust_game_parameters
 from src.content_generation import generate_content, generate_voice_content
 from src.voice_module import transcribe_audio_whisper, record_audio
+import warnings
+
+warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
 
@@ -25,7 +28,9 @@ scaler = dp.scaler  # Use the same scaler from data_processing
 
 @app.route('/')
 def index():
-    return render_template("index.html", mission=mission, npc_response=npc_response, heatmap_url=url_for('static', filename='heatmap.png'), player_metrics_classification=player_metrics_classification)
+    return render_template("index.html", mission=mission, npc_response=npc_response,
+                           heatmap_url=url_for('static', filename='heatmap.png'),
+                           player_metrics_classification=player_metrics_classification)
 
 
 # Route to adjust game parameters

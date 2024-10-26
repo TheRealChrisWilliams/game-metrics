@@ -1,10 +1,14 @@
-from voice_module import record_audio, transcribe_audio_whisper
+from voice_module import record_audio, transcribe_audio_openai
 from content_generation import generate_voice_content
 from content_generation import generate_content
 from game_adjustment_model import adjust_game_parameters, train_model
 import time
 import torch
 import data_processing as dp
+import warnings
+warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 
 player_metrics = {
     'completion_time': 0,
@@ -60,7 +64,7 @@ def npc_interaction():
     print("NPC: 'Greetings traveler! What brings you here?'")
     # Record player's voice input
     audio = record_audio(duration=5, fs=16000)
-    player_input = transcribe_audio_whisper(audio)
+    player_input = transcribe_audio_openai(audio)
     if player_input:
         print(f"You said: '{player_input}'")
         # Generate NPC response

@@ -53,8 +53,8 @@ def train_model(X_tensor, Y_tensor, input_size, output_size, epochs=100):
             loss = criterion(outputs, batch_Y)
             loss.backward()
             optimizer.step()
-        if (epoch + 1) % 20 == 0:
-            print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss.item():.4f}")
+        # if (epoch + 1) % 20 == 0:
+        #     print(f"Epoch [{epoch + 1}/{epochs}], Loss: {loss.item():.4f}")
 
     return model
 

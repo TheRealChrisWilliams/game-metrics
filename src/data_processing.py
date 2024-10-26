@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
+import os
+
+
+os.environ["FFMPEG_PATH"] = r"C:\Users\nerdi\Desktop\ffmpeg\bin\ffmpeg.exe"
 
 # Initialize scaler for normalization
 scaler = MinMaxScaler()
@@ -75,12 +79,12 @@ def generate_heatmap():
     world_size = (10, 10)
     output_filename = "heatmap.png"
     player_positions = [
-        # Positions in Q1 (Top-left)
-        (2, 6), (2, 6), (3, 7), (2, 8), (3, 6),
-        (2, 6), (3, 7), (2, 7), (3, 6), (2, 6),
-        (3, 7), (2, 8), (3, 6), (2, 6), (2, 6),
-        (3, 7), (2, 8), (3, 6), (2, 6), (2, 6),
-        (7, 2), (8, 3), (7, 2), (8, 3), (7, 2),
+        # Positions in Q4 (Bottom-right)
+        (6, 2), (6, 2), (7, 3), (6, 1), (7, 2),
+        (6, 2), (7, 3), (6, 3), (7, 2), (6, 2),
+        (7, 3), (6, 1), (7, 2), (6, 2), (6, 2),
+        (7, 3), (6, 1), (7, 2), (6, 2), (6, 2),
+        (8, 1), (8, 2), (7, 1), (8, 3), (7, 1),
     ]
 
     heatmap_data = np.zeros(world_size)

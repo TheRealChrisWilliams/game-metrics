@@ -39,7 +39,7 @@ def generate_content(quadrant, player_metrics):
         response = openai.chat.completions.create(
             model='gpt-4o',
             messages=[
-                {'role': 'system', 'content': 'You are a game content generator assistant.'},
+                {'role': 'system', 'content': 'You are a game content generator assistant. Use the setting information and create a short storyline, along with 3-4 objectives. Also return NPC names, along with professions and roles.'},
                 {'role': 'user', 'content': prompt}
             ],
             max_tokens=4096,
